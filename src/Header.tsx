@@ -16,7 +16,7 @@ export interface HeaderProps {
   className?: string;
 }
 
-export default function Header({ 
+export default function Header({
   alwaysVisible = false,
   title = "the yu zone",
   titleHref = "/",
@@ -52,7 +52,7 @@ export default function Header({
     const baseClassName = `text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium ${
       isMobile ? '' : 'transition-colors'
     }`;
-    
+
     const handleClick = () => {
       if (isMobile) {
         setIsMenuOpen(false);
@@ -89,7 +89,7 @@ export default function Header({
       isVisible ? 'translate-y-0' : '-translate-y-full'
     } ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href={titleHref} className="text-2xl font-bold text-gray-900 hover:text-gray-700">
