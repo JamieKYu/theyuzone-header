@@ -1,17 +1,17 @@
-# @jamiekyu/theyuzone-header
+# @jamiekyu/website-header
 
 A reusable header component for Next.js applications.
 
 ## Installation
 
 ```bash
-npm install @jamiekyu/theyuzone-header
+npm install @jamiekyu/website-header
 ```
 
 ## Usage
 
 ```tsx
-import Header from '@jamiekyu/theyuzone-header';
+import Header from '@jamiekyu/website-header';
 
 function App() {
   return (

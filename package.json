@@ -1,5 +1,5 @@
 {
-  "name": "@jamiekyu/theyuzone-header",
+  "name": "@jamiekyu/website-header",
   "version": "1.0.6",
   "description": "Shared header component for Next.js applications",
   "main": "dist/index.js",
