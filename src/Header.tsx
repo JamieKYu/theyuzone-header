@@ -26,12 +26,10 @@ export default function Header({
 }: HeaderProps) {
   const config = getHeaderConfig();
 
-  const finalAlwaysVisible = alwaysVisible ?? config.alwaysVisible ?? true;
-  const finalTitle = title ?? config.title ?? "my website";
+  const finalAlwaysVisible = alwaysVisible ?? config.alwaysVisible ?? false;
+  const finalTitle = title ?? config.title ?? "";
   const finalTitleHref = titleHref ?? config.titleHref ?? "/";
-  const finalNavigationItems = navigationItems ?? config.navigationItems ?? [
-    { label: "about", href: "/about" }
-  ];
+  const finalNavigationItems = navigationItems ?? config.navigationItems ?? [];
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(finalAlwaysVisible);
 

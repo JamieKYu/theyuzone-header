@@ -1,0 +1,15 @@
+{
+  "alwaysVisible": true,
+  "title": "my website",
+  "titleHref": "/",
+  "navigationItems": [
+    {
+      "label": "home",
+      "href": "/"
+    },
+    {
+      "label": "about us",
+      "href": "/about"
+    }
+  ]
+}

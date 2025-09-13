@@ -24,9 +24,25 @@ const config: StorybookConfig = {
       define: {
         ...config.define,
         global: 'globalThis',
-        'process.env': '{}',
+        'process.env': JSON.stringify({
+          NEXT_PUBLIC_HEADER_ALWAYS_VISIBLE: 'true',
+          NEXT_PUBLIC_HEADER_TITLE: 'my website',
+          NEXT_PUBLIC_HEADER_TITLE_HREF: '/',
+          NEXT_PUBLIC_HEADER_NAV_ITEMS: JSON.stringify([
+            { label: "home", href: "/" },
+            { label: "about us", href: "/about" }
+          ])
+        }),
         process: {
-          env: {},
+          env: {
+            NEXT_PUBLIC_HEADER_ALWAYS_VISIBLE: 'true',
+            NEXT_PUBLIC_HEADER_TITLE: 'my website',
+            NEXT_PUBLIC_HEADER_TITLE_HREF: '/',
+            NEXT_PUBLIC_HEADER_NAV_ITEMS: JSON.stringify([
+              { label: "home", href: "/" },
+              { label: "about us", href: "/about" }
+            ])
+          },
         },
       },
       resolve: {
