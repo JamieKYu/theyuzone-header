@@ -1,6 +1,6 @@
 # @jamiekyu/theyuzone-header
 
-A reusable header component for TheYuZone Next.js applications.
+A reusable header component for Next.js applications.
 
 ## Installation
 

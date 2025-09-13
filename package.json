@@ -1,7 +1,7 @@
 {
   "name": "@jamiekyu/theyuzone-header",
   "version": "1.0.4",
-  "description": "Shared header component for TheYuZone applications",
+  "description": "Shared header component for Next.js applications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -47,6 +47,6 @@
     "component",
     "theyuzone"
   ],
-  "author": "TheYuZone",
+  "author": "jamiekyu",
   "license": "MIT"
 }

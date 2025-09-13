@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { getHeaderConfig } from './config';
 
 export interface NavigationItem {
   label: string;
@@ -17,22 +18,25 @@ export interface HeaderProps {
 }
 
 export default function Header({
-  alwaysVisible = false,
-  title = "the yu zone",
-  titleHref = "/",
-  navigationItems = [
-    { label: "home", href: "/" },
-    { label: "photos", href: "/photos", external: true },
-    { label: "videos", href: "/videos" },
-    { label: "about us", href: "/about" }
-  ],
+  alwaysVisible,
+  title,
+  titleHref,
+  navigationItems,
   className = ""
 }: HeaderProps) {
+  const config = getHeaderConfig();
+
+  const finalAlwaysVisible = alwaysVisible ?? config.alwaysVisible ?? true;
+  const finalTitle = title ?? config.title ?? "my website";
+  const finalTitleHref = titleHref ?? config.titleHref ?? "/";
+  const finalNavigationItems = navigationItems ?? config.navigationItems ?? [
+    { label: "about", href: "/about" }
+  ];
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(alwaysVisible);
+  const [isVisible, setIsVisible] = useState(finalAlwaysVisible);
 
   useEffect(() => {
-    if (alwaysVisible) {
+    if (finalAlwaysVisible) {
       setIsVisible(true);
       return;
     }
@@ -46,7 +50,7 @@ export default function Header({
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [alwaysVisible]);
+  }, [finalAlwaysVisible]);
 
   const renderNavigationItem = (item: NavigationItem, isMobile = false) => {
     const baseClassName = `text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium ${
@@ -92,14 +96,14 @@ export default function Header({
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href={titleHref} className="text-2xl font-bold text-gray-900 hover:text-gray-700">
-              {title}
+            <Link href={finalTitleHref} className="text-2xl font-bold text-gray-900 hover:text-gray-700">
+              {finalTitle}
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            {navigationItems.map(item => renderNavigationItem(item))}
+            {finalNavigationItems.map(item => renderNavigationItem(item))}
           </nav>
 
           {/* Mobile menu button */}
@@ -131,7 +135,7 @@ export default function Header({
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-200 pt-4 pb-4">
             <div className="flex flex-col space-y-2">
-              {navigationItems.map(item => renderNavigationItem(item, true))}
+              {finalNavigationItems.map(item => renderNavigationItem(item, true))}
             </div>
           </div>
         )}
