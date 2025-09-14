@@ -10,8 +10,13 @@ npm install @jamiekyu/website-header
 
 ## Usage
 
+### Method 1: With Pre-compiled CSS (Recommended)
+
+This method requires no Tailwind CSS configuration on the consumer side:
+
 ```tsx
-import Header from '@jamiekyu/website-header';
+import { Header } from '@jamiekyu/website-header';
+import '@jamiekyu/website-header/dist/header.css';
 
 function App() {
   return (
@@ -25,6 +30,51 @@ function App() {
       alwaysVisible={true}
     />
   );
+}
+```
+
+### Method 2: Environment Variables (Automatic Configuration)
+
+For even simpler usage, you can configure the header via environment variables in your Next.js config:
+
+```tsx
+// Just import and use - no props needed!
+import { Header } from '@jamiekyu/website-header';
+import '@jamiekyu/website-header/dist/header.css';
+
+function App() {
+  return <Header />;
+}
+```
+
+The header will automatically read from these environment variables:
+- `NEXT_PUBLIC_HEADER_ALWAYS_VISIBLE`
+- `NEXT_PUBLIC_HEADER_TITLE`
+- `NEXT_PUBLIC_HEADER_TITLE_HREF`
+- `NEXT_PUBLIC_HEADER_NAV_ITEMS`
+
+### Method 3: With Your Own Tailwind CSS
+
+If you already use Tailwind CSS and want to customize the styling, you can include the header component in your Tailwind config:
+
+```javascript
+// tailwind.config.js
+module.exports = {
+  content: [
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
+    './node_modules/@jamiekyu/website-header/dist/**/*.{js,jsx,ts,tsx}'
+  ],
+  // ... rest of your config
+}
+```
+
+Then use without importing CSS:
+
+```tsx
+import { Header } from '@jamiekyu/website-header';
+
+function App() {
+  return <Header title="My App" />;
 }
 ```
 

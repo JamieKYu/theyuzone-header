@@ -5,10 +5,13 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "dist/header.css"
   ],
   "scripts": {
-    "build": "tsc",
+    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/header.css --minify",
+    "build:ts": "tsc",
+    "build": "npm run build:css && npm run build:ts",
     "dev": "tsc --watch",
     "prepublishOnly": "npm run build",
     "storybook": "storybook dev -p 6006",
