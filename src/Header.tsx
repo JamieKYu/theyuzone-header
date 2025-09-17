@@ -51,7 +51,7 @@ export default function Header({
   }, [finalAlwaysVisible]);
 
   const renderNavigationItem = (item: NavigationItem, isMobile = false) => {
-    const baseClassName = `wh-text-gray-700 hover:wh-text-gray-900 wh-px-3 wh-py-2 wh-text-sm wh-font-medium ${
+    const baseClassName = `wh-no-underline wh-text-gray-700 hover:wh-text-gray-900 wh-px-3 wh-py-2 wh-text-sm wh-font-medium ${
       isMobile ? '' : 'wh-transition-colors'
     }`;
 
@@ -94,7 +94,7 @@ export default function Header({
         <div className="wh-flex wh-justify-between wh-items-center wh-h-16">
           {/* Logo */}
           <div className="wh-flex-shrink-0">
-            <Link href={finalTitleHref} className="wh-text-2xl wh-font-bold wh-text-gray-900 hover:wh-text-gray-700">
+            <Link href={finalTitleHref} className="wh-no-underline wh-text-2xl wh-font-bold wh-text-gray-900 hover:wh-text-gray-700">
               {finalTitle}
             </Link>
           </div>
@@ -108,7 +108,7 @@ export default function Header({
           <div className="md:wh-hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="wh-text-gray-700 hover:wh-text-gray-900 wh-p-2"
+              className="wh-bg-transparent wh-border-0 wh-text-gray-700 hover:wh-text-gray-900 wh-p-2"
             >
               <svg
                 className="wh-h-6 wh-w-6"
@@ -131,7 +131,7 @@ export default function Header({
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:wh-hidden wh-border-t wh-border-gray-200 wh-pt-4 wh-pb-4">
+          <div className="md:wh-hidden wh-border-t wh-border-solid wh-border-gray-200 wh-pt-4 wh-pb-4">
             <div className="wh-flex wh-flex-col wh-space-y-2">
               {finalNavigationItems.map(item => renderNavigationItem(item, true))}
             </div>
