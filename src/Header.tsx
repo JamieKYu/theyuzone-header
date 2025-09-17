@@ -51,8 +51,8 @@ export default function Header({
   }, [finalAlwaysVisible]);
 
   const renderNavigationItem = (item: NavigationItem, isMobile = false) => {
-    const baseClassName = `text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium ${
-      isMobile ? '' : 'transition-colors'
+    const baseClassName = `wh-text-gray-700 hover:wh-text-gray-900 wh-px-3 wh-py-2 wh-text-sm wh-font-medium ${
+      isMobile ? '' : 'wh-transition-colors'
     }`;
 
     const handleClick = () => {
@@ -87,31 +87,31 @@ export default function Header({
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-200 transition-transform duration-300 ${
-      isVisible ? 'translate-y-0' : '-translate-y-full'
+    <header className={`wh-fixed wh-top-0 wh-left-0 wh-right-0 wh-z-50 wh-bg-white wh-shadow-sm wh-border-b wh-border-gray-200 wh-transition-transform wh-duration-300 ${
+      isVisible ? 'wh-translate-y-0' : 'wh--translate-y-full'
     } ${className}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="wh-max-w-7xl wh-mx-auto wh-px-4 sm:wh-px-6 lg:wh-px-8">
+        <div className="wh-flex wh-justify-between wh-items-center wh-h-16">
           {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link href={finalTitleHref} className="text-2xl font-bold text-gray-900 hover:text-gray-700">
+          <div className="wh-flex-shrink-0">
+            <Link href={finalTitleHref} className="wh-text-2xl wh-font-bold wh-text-gray-900 hover:wh-text-gray-700">
               {finalTitle}
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="wh-hidden md:wh-flex wh-space-x-8">
             {finalNavigationItems.map(item => renderNavigationItem(item))}
           </nav>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:wh-hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-gray-900 p-2"
+              className="wh-text-gray-700 hover:wh-text-gray-900 wh-p-2"
             >
               <svg
-                className="h-6 w-6"
+                className="wh-h-6 wh-w-6"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -131,8 +131,8 @@ export default function Header({
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 pt-4 pb-4">
-            <div className="flex flex-col space-y-2">
+          <div className="md:wh-hidden wh-border-t wh-border-gray-200 wh-pt-4 wh-pb-4">
+            <div className="wh-flex wh-flex-col wh-space-y-2">
               {finalNavigationItems.map(item => renderNavigationItem(item, true))}
             </div>
           </div>
