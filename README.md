@@ -52,6 +52,7 @@ The header will automatically read from these environment variables:
 - `NEXT_PUBLIC_HEADER_TITLE`
 - `NEXT_PUBLIC_HEADER_TITLE_HREF`
 - `NEXT_PUBLIC_HEADER_NAV_ITEMS`
+- `NEXT_PUBLIC_HEADER_GA_MEASUREMENT_ID` - Google Analytics measurement ID
 
 ### Method 3: With Your Own Tailwind CSS
 
@@ -85,12 +86,64 @@ function App() {
 - `titleHref?: string` - The href for the title link (default: "/")
 - `navigationItems?: NavigationItem[]` - Array of navigation items
 - `className?: string` - Additional CSS classes
+- `googleAnalytics?: { measurementId: string }` - Google Analytics configuration
 
 ## NavigationItem
 
 - `label: string` - The display text
 - `href: string` - The URL to navigate to
 - `external?: boolean` - Whether this is an external link (uses <a> instead of Next.js Link)
+
+## Google Analytics Integration
+
+The header component includes optional Google Analytics support for tracking user interactions. When enabled, it will:
+
+- Initialize Google Analytics with your measurement ID
+- Track page views on component mount
+- Track clicks on navigation items and the logo/title
+- Categorize events under 'website-header' for easy filtering
+
+### Configuration Options
+
+#### Option 1: Via Props
+```tsx
+<Header
+  title="My App"
+  googleAnalytics={{ measurementId: "G-XXXXXXXXXX" }}
+  navigationItems={[...]}
+/>
+```
+
+#### Option 2: Via Environment Variable
+Set the following environment variable:
+```bash
+NEXT_PUBLIC_HEADER_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
+#### Option 3: Via JSON Configuration File
+Add to your `header-config.json`:
+```json
+{
+  "title": "My App",
+  "googleAnalytics": {
+    "measurementId": "G-XXXXXXXXXX"
+  }
+}
+```
+
+### Tracked Events
+
+The component automatically tracks these events:
+
+1. **Page Load** - Tracked when the header component mounts
+2. **Navigation Clicks** - Tracked when users click on navigation items with details:
+   - Event name: `navigation_click`
+   - Event category: `navigation`
+   - Event label: Navigation item label
+   - Destination: Link href
+   - Link type: `internal` or `external`
+
+3. **Logo Clicks** - Tracked when users click on the title/logo
 
 ## Development
 

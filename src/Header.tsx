@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { getHeaderConfig } from './config';
+import { initializeGoogleAnalytics, trackPageView, trackNavigationClick } from './analytics';
 
 export interface NavigationItem {
   label: string;
@@ -15,6 +16,9 @@ export interface HeaderProps {
   titleHref?: string;
   navigationItems?: NavigationItem[];
   className?: string;
+  googleAnalytics?: {
+    measurementId: string;
+  };
 }
 
 export default function Header({
@@ -22,7 +26,8 @@ export default function Header({
   title,
   titleHref,
   navigationItems,
-  className = ""
+  className = "",
+  googleAnalytics
 }: HeaderProps) {
   const config = getHeaderConfig();
 
@@ -30,8 +35,18 @@ export default function Header({
   const finalTitle = title ?? config.title ?? "";
   const finalTitleHref = titleHref ?? config.titleHref ?? "/";
   const finalNavigationItems = navigationItems ?? config.navigationItems ?? [];
+  const finalGoogleAnalytics = googleAnalytics ?? config.googleAnalytics;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(finalAlwaysVisible);
+
+  // Initialize Google Analytics
+  useEffect(() => {
+    if (finalGoogleAnalytics?.measurementId) {
+      initializeGoogleAnalytics(finalGoogleAnalytics);
+      // Track initial page view
+      trackPageView();
+    }
+  }, [finalGoogleAnalytics?.measurementId]);
 
   useEffect(() => {
     if (finalAlwaysVisible) {
@@ -56,6 +71,11 @@ export default function Header({
     }`;
 
     const handleClick = () => {
+      // Track navigation click
+      if (finalGoogleAnalytics?.measurementId) {
+        trackNavigationClick(item);
+      }
+
       if (isMobile) {
         setIsMenuOpen(false);
       }
@@ -94,7 +114,19 @@ export default function Header({
         <div className="wh-flex wh-justify-between wh-items-center wh-h-16">
           {/* Logo */}
           <div className="wh-flex-shrink-0">
-            <Link href={finalTitleHref} className="wh-no-underline wh-text-2xl wh-font-bold wh-text-gray-900 hover:wh-text-gray-700">
+            <Link
+              href={finalTitleHref}
+              className="wh-no-underline wh-text-2xl wh-font-bold wh-text-gray-900 hover:wh-text-gray-700"
+              onClick={() => {
+                if (finalGoogleAnalytics?.measurementId) {
+                  trackNavigationClick({
+                    label: finalTitle || 'Logo',
+                    href: finalTitleHref,
+                    external: false
+                  });
+                }
+              }}
+            >
               {finalTitle}
             </Link>
           </div>

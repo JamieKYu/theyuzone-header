@@ -7,6 +7,9 @@ export interface HeaderConfig {
     href: string;
     external?: boolean;
   }>;
+  googleAnalytics?: {
+    measurementId: string;
+  };
 }
 
 // Server-side function to load config from JSON file
@@ -59,5 +62,8 @@ export function getHeaderConfig(): HeaderConfig {
     title: process.env.NEXT_PUBLIC_HEADER_TITLE,
     titleHref: process.env.NEXT_PUBLIC_HEADER_TITLE_HREF,
     navigationItems: parseNavigationItems(),
+    googleAnalytics: process.env.NEXT_PUBLIC_HEADER_GA_MEASUREMENT_ID ? {
+      measurementId: process.env.NEXT_PUBLIC_HEADER_GA_MEASUREMENT_ID
+    } : undefined,
   };
 }

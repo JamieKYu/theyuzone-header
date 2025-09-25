@@ -11,5 +11,8 @@
       "label": "about us",
       "href": "/about"
     }
-  ]
+  ],
+  "googleAnalytics": {
+    "measurementId": "G-XXXXXXXXXX"
+  }
 }

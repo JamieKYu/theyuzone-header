@@ -58,3 +58,4 @@ temp/
 
 # Storybook
 *storybook.log
+storybook-static/
