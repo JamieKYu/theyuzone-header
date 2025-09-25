@@ -25,13 +25,31 @@ const config: StorybookConfig = {
       'next/link': require.resolve('./mocks/next-link.tsx'),
     };
 
+    // Add fallbacks for Node.js modules that aren't available in browser
+    config.resolve.fallback = {
+      ...(config.resolve.fallback || {}),
+      'zlib': false,
+      'fs': false,
+      'path': false,
+      'crypto': false,
+      'stream': false,
+      'http': false,
+      'https': false,
+      'os': false,
+      'url': false,
+      'assert': false,
+      'util': false,
+    };
+
     // Ensure TS/TSX are resolved
     config.resolve.extensions = Array.from(
       new Set([...(config.resolve.extensions || []), '.ts', '.tsx'])
     );
 
     // Add a rule to handle TypeScript files in stories and preview
-    config.module = config.module || { rules: [] } as any;
+    if (!config.module) {
+      config.module = { rules: [] };
+    }
     config.module.rules = [
       ...(config.module.rules || []),
       {
@@ -57,6 +75,7 @@ const config: StorybookConfig = {
             { label: 'about us', href: '/about' },
           ])
         ),
+        'process.env.NEXT_PUBLIC_HEADER_GA_MEASUREMENT_ID': JSON.stringify('G-STORYBOOK-TEST'),
       })
     );
 

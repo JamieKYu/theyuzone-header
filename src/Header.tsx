@@ -48,6 +48,66 @@ export default function Header({
     }
   }, [finalGoogleAnalytics?.measurementId]);
 
+  // Track route changes for Next.js apps
+  useEffect(() => {
+    if (!finalGoogleAnalytics?.measurementId) return;
+
+    // Only run if Next.js router is available
+    if (typeof window === 'undefined') return;
+
+    // Check if we're in a Next.js app by looking for Next.js router
+    let nextRouter: any = null;
+    try {
+      // Try to access Next.js router if available
+      const { useRouter } = require('next/router') || {};
+      if (useRouter) {
+        nextRouter = useRouter();
+      }
+    } catch {
+      // Not a Next.js app with pages router, try app router
+      try {
+        const { usePathname } = require('next/navigation') || {};
+        if (usePathname) {
+          // We'll track URL changes using a different approach for app router
+          let currentPath = window.location.pathname;
+
+          const handleRouteChange = () => {
+            if (window.location.pathname !== currentPath) {
+              currentPath = window.location.pathname;
+              setTimeout(() => trackPageView(), 100); // Small delay to ensure page title is updated
+            }
+          };
+
+          // Use MutationObserver to detect URL changes in Next.js app router
+          const observer = new MutationObserver(handleRouteChange);
+          observer.observe(document, { subtree: true, childList: true });
+
+          // Also listen to popstate for back/forward navigation
+          window.addEventListener('popstate', handleRouteChange);
+
+          return () => {
+            observer.disconnect();
+            window.removeEventListener('popstate', handleRouteChange);
+          };
+        }
+      } catch {
+        // Not a Next.js app, no route tracking needed
+      }
+    }
+
+    // For pages router
+    if (nextRouter) {
+      const handleRouteChange = () => {
+        setTimeout(() => trackPageView(), 100); // Small delay to ensure page title is updated
+      };
+
+      nextRouter.events.on('routeChangeComplete', handleRouteChange);
+      return () => {
+        nextRouter.events.off('routeChangeComplete', handleRouteChange);
+      };
+    }
+  }, [finalGoogleAnalytics?.measurementId]);
+
   useEffect(() => {
     if (finalAlwaysVisible) {
       setIsVisible(true);

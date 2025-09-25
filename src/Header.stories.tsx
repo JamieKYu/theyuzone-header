@@ -82,3 +82,25 @@ export const WithTallHeight: Story = {
     },
   },
 };
+
+export const WithGoogleAnalytics: Story = {
+  args: {
+    alwaysVisible: true,
+    title: 'GA Tracking Demo',
+    googleAnalytics: {
+      measurementId: 'G-STORYBOOK-TEST'
+    },
+    navigationItems: [
+      { label: 'Home', href: '/' },
+      { label: 'About', href: '/about' },
+      { label: 'External Link', href: 'https://example.com', external: true },
+    ],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'This story demonstrates Google Analytics tracking. Check browser network tab for GA requests when clicking navigation items.',
+      },
+    },
+  },
+};
