@@ -18,18 +18,25 @@ let isScriptLoaded = false;
 
 // Helper function to wait for GA script to be loaded
 function waitForGAScript(callback: () => void, maxAttempts = 30) {
+  console.log('📊 [GA Debug] waitForGAScript called, isScriptLoaded:', isScriptLoaded, 'attempts left:', maxAttempts);
+
   if (isScriptLoaded) {
+    console.log('📊 [GA Debug] Script already loaded, executing callback');
     callback();
     return;
   }
 
   // Check if the real GA gtag function is loaded (not our initial stub)
-  // The real GA gtag function is much more complex than our simple stub
-  const gtagIsReal = window.gtag && window.gtag.toString().length > 100 && !window.gtag.toString().includes('function gtag');
+  // Look for Google Analytics global object or enhanced gtag function
+  const gtagIsReal = window.gtag && typeof window.gtag === 'function' && window.gtag.toString().length > 100;
   const gaExists = !!(window as any).ga;
+  const gtagObjectExists = !!(window as any).gtag && (window as any).gtag.l;
 
-  // Only consider GA loaded when we have the real gtag function OR the ga object
-  if (gtagIsReal || gaExists) {
+  console.log('📊 [GA Debug] Script detection:', { gtagIsReal, gaExists, gtagObjectExists, gtagLength: window.gtag?.toString().length });
+
+  // Only consider GA loaded when we have the real gtag function OR the ga object OR gtag with .l property
+  if (gtagIsReal || gaExists || gtagObjectExists) {
+    console.log('📊 [GA Debug] Real GA script detected, marking as loaded');
     isScriptLoaded = true;
     callback();
     return;
@@ -38,6 +45,7 @@ function waitForGAScript(callback: () => void, maxAttempts = 30) {
   if (maxAttempts > 0) {
     setTimeout(() => waitForGAScript(callback, maxAttempts - 1), 200);
   } else {
+    console.log('📊 [GA Debug] Max attempts reached, executing callback anyway');
     // Call anyway to put events in dataLayer
     callback();
   }
@@ -87,10 +95,11 @@ export function initializeGoogleAnalytics(config: GoogleAnalyticsConfig) {
 
   script.onload = () => {
     console.log('📊 [GA Debug] GA script loaded successfully');
+    // Give GA more time to initialize properly
     setTimeout(() => {
       isScriptLoaded = true;
-      console.log('📊 [GA Debug] Script marked as loaded');
-    }, 100);
+      console.log('📊 [GA Debug] Script marked as loaded after onload');
+    }, 500);
   };
 
   script.onerror = () => {
@@ -99,11 +108,13 @@ export function initializeGoogleAnalytics(config: GoogleAnalyticsConfig) {
 
   document.head.appendChild(script);
 
-  // Mark as initialized after a short delay to allow for processing
+  // Backup timer - mark as loaded after longer delay
   setTimeout(() => {
-    isScriptLoaded = true;
-    console.log('📊 [GA Debug] Backup script loaded flag set');
-  }, 1000);
+    if (!isScriptLoaded) {
+      isScriptLoaded = true;
+      console.log('📊 [GA Debug] Backup script loaded flag set after 2s');
+    }
+  }, 2000);
   isInitialized = true;
   console.log('📊 [GA Debug] Initialization complete');
 }
@@ -133,9 +144,14 @@ export function trackPageView(url?: string) {
 
   // Wait for GA script to load before sending page view
   waitForGAScript(() => {
-    console.log('📊 [GA Debug] Sending page view config to GA');
-    window.gtag('config', currentMeasurementId, pageData);
-    console.log('📊 [GA Debug] DataLayer after page view:', window.dataLayer.slice(-3));
+    console.log('📊 [GA Debug] Sending page view event to GA');
+    // Use the proper GA4 page_view event format instead of config
+    window.gtag('event', 'page_view', {
+      page_title: pageData.page_title,
+      page_location: pageData.page_location,
+      page_path: pageData.page_path
+    });
+    console.log('📊 [GA Debug] DataLayer after page view:', window.dataLayer.slice(-2));
   });
 }
 
