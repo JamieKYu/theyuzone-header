@@ -116,6 +116,7 @@ export function initializeGoogleAnalytics(config: GoogleAnalyticsConfig) {
 
 export function trackPageView(url?: string) {
   if (typeof window === 'undefined' || !window.gtag) {
+    console.warn('[GA] trackPageView failed - window or gtag not available');
     return;
   }
 
@@ -133,8 +134,12 @@ export function trackPageView(url?: string) {
     return;
   }
 
+  console.log('[GA] Attempting to track page view:', pageData);
+
   // Wait for GA script to load before sending page view
   waitForGAScript(() => {
+    console.log('[GA] GA script ready, sending page view');
+
     // Apply localhost override for page_location if needed
     const eventData: any = {
       page_title: pageData.page_title,
@@ -145,10 +150,18 @@ export function trackPageView(url?: string) {
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (isLocalhost) {
       eventData.page_location = eventData.page_location.replace(/localhost:\d+/, 'theyuzone.com');
+      console.log('[GA] Applied localhost override');
     }
 
     // Use the proper GA4 page_view event format
+    console.log('[GA] Sending gtag event:', eventData);
     window.gtag('event', 'page_view', eventData);
+
+    // Check dataLayer after event
+    setTimeout(() => {
+      console.log('[GA] DataLayer length after event:', window.dataLayer?.length);
+      console.log('[GA] Recent dataLayer entries:', window.dataLayer?.slice(-3));
+    }, 1000);
   });
 }
 
