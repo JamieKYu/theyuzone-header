@@ -23,6 +23,8 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
       'next/link': require.resolve('./mocks/next-link.tsx'),
+      'next/router': require.resolve('./mocks/next-router.ts'),
+      'next/navigation': require.resolve('./mocks/next-navigation.ts'),
     };
 
     // Add fallbacks for Node.js modules that aren't available in browser

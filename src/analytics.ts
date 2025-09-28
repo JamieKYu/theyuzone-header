@@ -18,24 +18,18 @@ let isScriptLoaded = false;
 
 // Helper function to wait for GA script to be loaded
 function waitForGAScript(callback: () => void, maxAttempts = 30) {
-  console.log(`waitForGAScript: attempt ${31 - maxAttempts}, isScriptLoaded: ${isScriptLoaded}`);
-
   if (isScriptLoaded) {
-    console.log('GA script already loaded, executing callback');
     callback();
     return;
   }
 
-  // Check multiple indicators that GA script has loaded
+  // Check if the real GA gtag function is loaded (not our initial stub)
+  // The real GA gtag function is much more complex than our simple stub
+  const gtagIsReal = window.gtag && window.gtag.toString().length > 100 && !window.gtag.toString().includes('function gtag');
   const gaExists = !!(window as any).ga;
-  const gtagHasQueue = !!(window as any).gtag?.q;
-  const dataLayerProcessed = window.dataLayer && window.dataLayer.length > 0 &&
-    window.dataLayer.some((item: any) => Array.isArray(item) && item[0] === 'js');
 
-  console.log('GA detection:', { gaExists, gtagHasQueue, dataLayerProcessed });
-
-  if (gaExists || gtagHasQueue || dataLayerProcessed) {
-    console.log('GA script detected as loaded via detection logic');
+  // Only consider GA loaded when we have the real gtag function OR the ga object
+  if (gtagIsReal || gaExists) {
     isScriptLoaded = true;
     callback();
     return;
@@ -44,7 +38,6 @@ function waitForGAScript(callback: () => void, maxAttempts = 30) {
   if (maxAttempts > 0) {
     setTimeout(() => waitForGAScript(callback, maxAttempts - 1), 200);
   } else {
-    console.warn('Google Analytics script failed to load after 6 seconds, executing anyway');
     // Call anyway to put events in dataLayer
     callback();
   }
@@ -72,9 +65,6 @@ export function initializeGoogleAnalytics(config: GoogleAnalyticsConfig) {
     window.dataLayer.push(args);
   };
 
-  // Initialize Google Analytics immediately (standard approach)
-  console.log('🚀 Initializing Google Analytics...');
-
   // Configure Google Analytics
   window.gtag('js', new Date());
   window.gtag('config', measurementId, {
@@ -88,22 +78,20 @@ export function initializeGoogleAnalytics(config: GoogleAnalyticsConfig) {
   script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
 
   script.onload = () => {
-    console.log('✅ GA script loaded');
-    isScriptLoaded = true;
+    setTimeout(() => {
+      isScriptLoaded = true;
+    }, 100);
   };
 
   script.onerror = () => {
-    console.error('❌ Failed to load Google Analytics script');
+    console.error('Failed to load Google Analytics script');
   };
 
   document.head.appendChild(script);
 
-  console.log('📡 Google Analytics script added to page');
-
   // Mark as initialized after a short delay to allow for processing
   setTimeout(() => {
     isScriptLoaded = true;
-    console.log('⚡ Google Analytics marked as ready');
   }, 1000);
   isInitialized = true;
 }
@@ -113,13 +101,24 @@ export function trackPageView(url?: string) {
     return;
   }
 
-  console.log('🔍 Making trackPageView call');
-  window.gtag('config', currentMeasurementId, {
+  const pageData = {
     page_path: url || window.location.pathname + window.location.search,
     page_title: document.title,
     page_location: window.location.href,
+  };
+
+  // Check if we're in Storybook environment
+  const isStorybook = window.location.href.includes('iframe.html') && window.location.href.includes('localhost');
+
+  if (isStorybook) {
+    console.log('📊 [Storybook] Page View:', pageData);
+    return;
+  }
+
+  // Wait for GA script to load before sending page view
+  waitForGAScript(() => {
+    window.gtag('config', currentMeasurementId, pageData);
   });
-  console.log('📤 trackPageView call made');
 }
 
 export function trackEvent(eventName: string, parameters?: Record<string, any>) {
@@ -127,12 +126,21 @@ export function trackEvent(eventName: string, parameters?: Record<string, any>) 
     return;
   }
 
-  console.log('🎯 Making trackEvent call:', eventName);
-  window.gtag('event', eventName, {
-    event_category: 'website-header',
-    ...parameters,
+  // Check if we're in Storybook environment
+  const isStorybook = window.location.href.includes('iframe.html') && window.location.href.includes('localhost');
+
+  if (isStorybook) {
+    console.log('📊 [Storybook] Event:', eventName, parameters);
+    return;
+  }
+
+  // Wait for GA script to load before sending events
+  waitForGAScript(() => {
+    window.gtag('event', eventName, {
+      event_category: 'website-header',
+      ...parameters,
+    });
   });
-  console.log('📤 trackEvent call made:', eventName);
 }
 
 export function trackNavigationClick(item: { label: string; href: string; external?: boolean }) {
