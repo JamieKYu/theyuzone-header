@@ -56,6 +56,14 @@ export function initializeGoogleAnalytics(config: GoogleAnalyticsConfig) {
   }
 
   const { measurementId } = config;
+
+  // Validate measurement ID format
+  if (!measurementId || !measurementId.startsWith('G-')) {
+    console.error('[GA] Invalid measurement ID:', measurementId);
+    return;
+  }
+
+  console.log('[GA] Initializing with measurement ID:', measurementId);
   currentMeasurementId = measurementId;
 
   // Initialize dataLayer if it doesn't exist
@@ -85,7 +93,21 @@ export function initializeGoogleAnalytics(config: GoogleAnalyticsConfig) {
     configOptions.page_location = window.location.href.replace('localhost:3002', 'theyuzone.com');
   }
 
-  window.gtag('config', measurementId, configOptions);
+  // Enhanced config for proper GA4 data collection
+  const finalConfig = {
+    ...configOptions,
+    // Ensure data collection is enabled
+    send_page_view: true,
+    transport_type: 'beacon',
+    // Force enable tracking
+    anonymize_ip: false,
+    allow_ad_personalization_signals: true,
+    allow_google_signals: true,
+    cookie_flags: 'SameSite=None;Secure'
+  };
+
+  window.gtag('config', measurementId, finalConfig);
+  console.log('[GA] Config applied:', finalConfig);
 
   // Load Google Analytics script
   const script = document.createElement('script');
@@ -153,9 +175,19 @@ export function trackPageView(url?: string) {
       console.log('[GA] Applied localhost override');
     }
 
+    // Verify gtag function before sending
+    console.log('[GA] gtag function type:', typeof window.gtag);
+    console.log('[GA] gtag function source:', window.gtag.toString().substring(0, 100));
+
     // Use the proper GA4 page_view event format
     console.log('[GA] Sending gtag event:', eventData);
     window.gtag('event', 'page_view', eventData);
+
+    // Also try sending a test event to verify tracking
+    window.gtag('event', 'test_event', {
+      event_category: 'debug',
+      event_label: 'ga_tracking_test'
+    });
 
     // Check dataLayer after event
     setTimeout(() => {
