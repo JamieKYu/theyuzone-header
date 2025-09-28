@@ -18,10 +18,7 @@ let isScriptLoaded = false;
 
 // Helper function to wait for GA script to be loaded
 function waitForGAScript(callback: () => void, maxAttempts = 30) {
-  console.log('📊 [GA Debug] waitForGAScript called, isScriptLoaded:', isScriptLoaded, 'attempts left:', maxAttempts);
-
   if (isScriptLoaded) {
-    console.log('📊 [GA Debug] Script already loaded, executing callback');
     callback();
     return;
   }
@@ -32,11 +29,8 @@ function waitForGAScript(callback: () => void, maxAttempts = 30) {
   const gaExists = !!(window as any).ga;
   const gtagObjectExists = !!(window as any).gtag && (window as any).gtag.l;
 
-  console.log('📊 [GA Debug] Script detection:', { gtagIsReal, gaExists, gtagObjectExists, gtagLength: window.gtag?.toString().length });
-
   // Only consider GA loaded when we have the real gtag function OR the ga object OR gtag with .l property
   if (gtagIsReal || gaExists || gtagObjectExists) {
-    console.log('📊 [GA Debug] Real GA script detected, marking as loaded');
     isScriptLoaded = true;
     callback();
     return;
@@ -45,7 +39,6 @@ function waitForGAScript(callback: () => void, maxAttempts = 30) {
   if (maxAttempts > 0) {
     setTimeout(() => waitForGAScript(callback, maxAttempts - 1), 200);
   } else {
-    console.log('📊 [GA Debug] Max attempts reached, executing callback anyway');
     // Call anyway to put events in dataLayer
     callback();
   }
@@ -54,56 +47,60 @@ function waitForGAScript(callback: () => void, maxAttempts = 30) {
 export function initializeGoogleAnalytics(config: GoogleAnalyticsConfig) {
   // Prevent multiple initializations with the same measurement ID
   if (isInitialized && currentMeasurementId === config.measurementId) {
-    console.log('📊 [GA Debug] Already initialized with same measurement ID');
     return;
   }
 
   // Only initialize on client side
   if (typeof window === 'undefined') {
-    console.log('📊 [GA Debug] Not on client side, skipping initialization');
     return;
   }
-
-  console.log('📊 [GA Debug] Initializing Google Analytics with:', config);
 
   const { measurementId } = config;
   currentMeasurementId = measurementId;
 
   // Initialize dataLayer if it doesn't exist
   window.dataLayer = window.dataLayer || [];
-  console.log('📊 [GA Debug] DataLayer initialized, current length:', window.dataLayer.length);
 
   // Define gtag function
   window.gtag = function gtag(...args: any[]) {
-    console.log('📊 [GA Debug] gtag called with:', args);
     window.dataLayer.push(args);
   };
 
   // Configure Google Analytics
   window.gtag('js', new Date());
-  window.gtag('config', measurementId, {
+
+  // Configure with localhost debugging enabled
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+  const configOptions: any = {
     page_title: document.title,
     page_location: window.location.href,
-  });
+  };
+
+  // Override localhost settings to force GA to work in development
+  if (isLocalhost) {
+    configOptions.debug_mode = true;
+    configOptions.send_page_view = true;
+    // Override the page_location to use a fake domain for localhost testing
+    configOptions.page_location = window.location.href.replace('localhost:3002', 'theyuzone.com');
+  }
+
+  window.gtag('config', measurementId, configOptions);
 
   // Load Google Analytics script
   const script = document.createElement('script');
   script.async = true;
   script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
 
-  console.log('📊 [GA Debug] Loading GA script:', script.src);
-
   script.onload = () => {
-    console.log('📊 [GA Debug] GA script loaded successfully');
     // Give GA more time to initialize properly
     setTimeout(() => {
       isScriptLoaded = true;
-      console.log('📊 [GA Debug] Script marked as loaded after onload');
     }, 500);
   };
 
   script.onerror = () => {
-    console.error('📊 [GA Debug] Failed to load Google Analytics script');
+    console.error('Failed to load Google Analytics script');
   };
 
   document.head.appendChild(script);
@@ -112,16 +109,13 @@ export function initializeGoogleAnalytics(config: GoogleAnalyticsConfig) {
   setTimeout(() => {
     if (!isScriptLoaded) {
       isScriptLoaded = true;
-      console.log('📊 [GA Debug] Backup script loaded flag set after 2s');
     }
   }, 2000);
   isInitialized = true;
-  console.log('📊 [GA Debug] Initialization complete');
 }
 
 export function trackPageView(url?: string) {
   if (typeof window === 'undefined' || !window.gtag) {
-    console.log('📊 [GA Debug] trackPageView called but gtag not available', { window: typeof window, gtag: !!window.gtag });
     return;
   }
 
@@ -139,19 +133,22 @@ export function trackPageView(url?: string) {
     return;
   }
 
-  console.log('📊 [GA Debug] Attempting to track page view:', pageData);
-  console.log('📊 [GA Debug] GA state:', { isScriptLoaded, currentMeasurementId, dataLayerLength: window.dataLayer?.length });
-
   // Wait for GA script to load before sending page view
   waitForGAScript(() => {
-    console.log('📊 [GA Debug] Sending page view event to GA');
-    // Use the proper GA4 page_view event format instead of config
-    window.gtag('event', 'page_view', {
+    // Apply localhost override for page_location if needed
+    const eventData: any = {
       page_title: pageData.page_title,
       page_location: pageData.page_location,
       page_path: pageData.page_path
-    });
-    console.log('📊 [GA Debug] DataLayer after page view:', window.dataLayer.slice(-2));
+    };
+
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalhost) {
+      eventData.page_location = eventData.page_location.replace(/localhost:\d+/, 'theyuzone.com');
+    }
+
+    // Use the proper GA4 page_view event format
+    window.gtag('event', 'page_view', eventData);
   });
 }
 
