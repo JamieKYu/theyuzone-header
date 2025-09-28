@@ -51,61 +51,82 @@ export default function Header({
   // Track route changes for Next.js apps
   useEffect(() => {
     if (!finalGoogleAnalytics?.measurementId) return;
-
-    // Only run if Next.js router is available
     if (typeof window === 'undefined') return;
 
-    // Check if we're in a Next.js app by looking for Next.js router
-    let nextRouter: any = null;
+    let currentPath = window.location.pathname + window.location.search;
+    let cleanup: (() => void) | undefined;
+
+    // Enhanced route change detection for App Router
+    const handleRouteChange = () => {
+      const newPath = window.location.pathname + window.location.search;
+      if (newPath !== currentPath) {
+        currentPath = newPath;
+        // Use a longer delay to ensure page content and title are updated
+        setTimeout(() => trackPageView(), 150);
+      }
+    };
+
+    // Method 1: Listen to Next.js App Router navigation events
+    // Next.js App Router dispatches custom events during navigation
+    const handleNextNavigation = () => {
+      setTimeout(() => handleRouteChange(), 50);
+    };
+
+    // Method 2: Enhanced popstate listener for browser navigation
+    const handlePopState = () => {
+      setTimeout(() => handleRouteChange(), 50);
+    };
+
+    // Method 3: Observe DOM changes that indicate route changes
+    // This catches cases where the URL changes without triggering other events
+    const observer = new MutationObserver((mutations) => {
+      // Only check for route changes if there were significant DOM changes
+      const hasSignificantChanges = mutations.some(mutation =>
+        mutation.type === 'childList' && mutation.addedNodes.length > 0
+      );
+      if (hasSignificantChanges) {
+        setTimeout(() => handleRouteChange(), 100);
+      }
+    });
+
+    // Method 4: Periodically check for URL changes as fallback
+    const urlCheckInterval = setInterval(() => {
+      handleRouteChange();
+    }, 1000);
+
     try {
-      // Try to access Next.js router if available
-      const { useRouter } = require('next/router') || {};
-      if (useRouter) {
-        nextRouter = useRouter();
-      }
-    } catch {
-      // Not a Next.js app with pages router, try app router
-      try {
-        const { usePathname } = require('next/navigation') || {};
-        if (usePathname) {
-          // We'll track URL changes using a different approach for app router
-          let currentPath = window.location.pathname;
+      // Listen for Next.js navigation events (works in both Pages and App Router)
+      window.addEventListener('beforeunload', handleRouteChange);
+      window.addEventListener('popstate', handlePopState);
 
-          const handleRouteChange = () => {
-            if (window.location.pathname !== currentPath) {
-              currentPath = window.location.pathname;
-              setTimeout(() => trackPageView(), 100); // Small delay to ensure page title is updated
-            }
-          };
+      // Listen for custom navigation events that Next.js might dispatch
+      window.addEventListener('navigationstart', handleNextNavigation);
+      window.addEventListener('navigationend', handleNextNavigation);
 
-          // Use MutationObserver to detect URL changes in Next.js app router
-          const observer = new MutationObserver(handleRouteChange);
-          observer.observe(document, { subtree: true, childList: true });
+      // Start observing DOM changes
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        // Observe attribute changes that might indicate route changes
+        attributes: true,
+        attributeFilter: ['data-pathname', 'data-route']
+      });
 
-          // Also listen to popstate for back/forward navigation
-          window.addEventListener('popstate', handleRouteChange);
-
-          return () => {
-            observer.disconnect();
-            window.removeEventListener('popstate', handleRouteChange);
-          };
-        }
-      } catch {
-        // Not a Next.js app, no route tracking needed
-      }
+      cleanup = () => {
+        window.removeEventListener('beforeunload', handleRouteChange);
+        window.removeEventListener('popstate', handlePopState);
+        window.removeEventListener('navigationstart', handleNextNavigation);
+        window.removeEventListener('navigationend', handleNextNavigation);
+        observer.disconnect();
+        clearInterval(urlCheckInterval);
+      };
+    } catch (error) {
+      console.warn('Route tracking setup failed:', error);
+      // Fallback to just the interval check
+      cleanup = () => clearInterval(urlCheckInterval);
     }
 
-    // For pages router
-    if (nextRouter) {
-      const handleRouteChange = () => {
-        setTimeout(() => trackPageView(), 100); // Small delay to ensure page title is updated
-      };
-
-      nextRouter.events.on('routeChangeComplete', handleRouteChange);
-      return () => {
-        nextRouter.events.off('routeChangeComplete', handleRouteChange);
-      };
-    }
+    return cleanup;
   }, [finalGoogleAnalytics?.measurementId]);
 
   useEffect(() => {
