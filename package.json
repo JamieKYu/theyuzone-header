@@ -1,6 +1,6 @@
 {
   "name": "@jamiekyu/website-header",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "Shared header component for Next.js applications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
