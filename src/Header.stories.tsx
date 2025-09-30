@@ -20,6 +20,10 @@ const meta: Meta<typeof Header> = {
       control: 'text',
       description: 'The link destination for the title',
     },
+    logoUrl: {
+      control: 'text',
+      description: 'Optional logo image URL to display to the left of the title',
+    },
     className: {
       control: 'text',
       description: 'Additional CSS classes to apply to the header',
@@ -83,23 +87,22 @@ export const WithTallHeight: Story = {
   },
 };
 
-export const WithGoogleAnalytics: Story = {
+export const WithLogo: Story = {
   args: {
     alwaysVisible: true,
-    title: 'GA Tracking Demo',
-    googleAnalytics: {
-      measurementId: 'G-STORYBOOK-TEST'
-    },
+    title: 'my website',
+    titleHref: '/',
+    logoUrl: 'http://localhost:3000/assets/logo/logo-256.png',
     navigationItems: [
-      { label: 'Home', href: '/' },
-      { label: 'About', href: '/about' },
-      { label: 'External Link', href: 'https://example.com', external: true },
+      { label: 'home', href: '/' },
+      { label: 'about', href: '/about' },
+      { label: 'contact', href: '/contact' },
     ],
   },
   parameters: {
     docs: {
       description: {
-        story: 'This story demonstrates Google Analytics tracking. Check browser network tab for GA requests when clicking navigation items.',
+        story: 'This story demonstrates a header with a logo image displayed to the left of the title.',
       },
     },
   },

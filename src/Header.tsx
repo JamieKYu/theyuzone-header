@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { getHeaderConfig } from './config';
-import { initializeGoogleAnalytics, trackPageView, trackNavigationClick } from './analytics';
 
 export interface NavigationItem {
   label: string;
@@ -14,120 +13,28 @@ export interface HeaderProps {
   alwaysVisible?: boolean;
   title?: string;
   titleHref?: string;
+  logoUrl?: string;
   navigationItems?: NavigationItem[];
   className?: string;
-  googleAnalytics?: {
-    measurementId: string;
-  };
 }
 
 export default function Header({
   alwaysVisible,
   title,
   titleHref,
+  logoUrl,
   navigationItems,
-  className = "",
-  googleAnalytics
+  className = ""
 }: HeaderProps) {
   const config = getHeaderConfig();
 
   const finalAlwaysVisible = alwaysVisible ?? config.alwaysVisible ?? false;
   const finalTitle = title ?? config.title ?? "";
   const finalTitleHref = titleHref ?? config.titleHref ?? "/";
+  const finalLogoUrl = logoUrl ?? config.logoUrl;
   const finalNavigationItems = navigationItems ?? config.navigationItems ?? [];
-  const finalGoogleAnalytics = googleAnalytics ?? config.googleAnalytics;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(finalAlwaysVisible);
-
-  // Initialize Google Analytics
-  useEffect(() => {
-    if (finalGoogleAnalytics?.measurementId) {
-      initializeGoogleAnalytics(finalGoogleAnalytics);
-      // Track initial page view
-      trackPageView();
-    }
-  }, [finalGoogleAnalytics?.measurementId]);
-
-  // Track route changes for Next.js apps
-  useEffect(() => {
-    if (!finalGoogleAnalytics?.measurementId) return;
-    if (typeof window === 'undefined') return;
-
-    let currentPath = window.location.pathname + window.location.search;
-    let cleanup: (() => void) | undefined;
-
-    // Enhanced route change detection for App Router
-    const handleRouteChange = () => {
-      const newPath = window.location.pathname + window.location.search;
-      if (newPath !== currentPath) {
-        currentPath = newPath;
-        // Use a longer delay to ensure page content and title are updated
-        setTimeout(() => trackPageView(), 150);
-      }
-    };
-
-    // Method 1: Listen to Next.js App Router navigation events
-    // Next.js App Router dispatches custom events during navigation
-    const handleNextNavigation = () => {
-      setTimeout(() => handleRouteChange(), 50);
-    };
-
-    // Method 2: Enhanced popstate listener for browser navigation
-    const handlePopState = () => {
-      setTimeout(() => handleRouteChange(), 50);
-    };
-
-    // Method 3: Observe DOM changes that indicate route changes
-    // This catches cases where the URL changes without triggering other events
-    const observer = new MutationObserver((mutations) => {
-      // Only check for route changes if there were significant DOM changes
-      const hasSignificantChanges = mutations.some(mutation =>
-        mutation.type === 'childList' && mutation.addedNodes.length > 0
-      );
-      if (hasSignificantChanges) {
-        setTimeout(() => handleRouteChange(), 100);
-      }
-    });
-
-    // Method 4: Periodically check for URL changes as fallback
-    const urlCheckInterval = setInterval(() => {
-      handleRouteChange();
-    }, 1000);
-
-    try {
-      // Listen for Next.js navigation events (works in both Pages and App Router)
-      window.addEventListener('beforeunload', handleRouteChange);
-      window.addEventListener('popstate', handlePopState);
-
-      // Listen for custom navigation events that Next.js might dispatch
-      window.addEventListener('navigationstart', handleNextNavigation);
-      window.addEventListener('navigationend', handleNextNavigation);
-
-      // Start observing DOM changes
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        // Observe attribute changes that might indicate route changes
-        attributes: true,
-        attributeFilter: ['data-pathname', 'data-route']
-      });
-
-      cleanup = () => {
-        window.removeEventListener('beforeunload', handleRouteChange);
-        window.removeEventListener('popstate', handlePopState);
-        window.removeEventListener('navigationstart', handleNextNavigation);
-        window.removeEventListener('navigationend', handleNextNavigation);
-        observer.disconnect();
-        clearInterval(urlCheckInterval);
-      };
-    } catch (error) {
-      console.warn('Route tracking setup failed:', error);
-      // Fallback to just the interval check
-      cleanup = () => clearInterval(urlCheckInterval);
-    }
-
-    return cleanup;
-  }, [finalGoogleAnalytics?.measurementId]);
 
   useEffect(() => {
     if (finalAlwaysVisible) {
@@ -152,11 +59,6 @@ export default function Header({
     }`;
 
     const handleClick = () => {
-      // Track navigation click
-      if (finalGoogleAnalytics?.measurementId) {
-        trackNavigationClick(item);
-      }
-
       if (isMobile) {
         setIsMenuOpen(false);
       }
@@ -197,17 +99,15 @@ export default function Header({
           <div className="wh-flex-shrink-0">
             <Link
               href={finalTitleHref}
-              className="wh-no-underline wh-text-2xl wh-font-bold wh-text-gray-900 hover:wh-text-gray-700"
-              onClick={() => {
-                if (finalGoogleAnalytics?.measurementId) {
-                  trackNavigationClick({
-                    label: finalTitle || 'Logo',
-                    href: finalTitleHref,
-                    external: false
-                  });
-                }
-              }}
+              className="wh-no-underline wh-flex wh-items-center wh-gap-3 wh-text-2xl wh-font-bold wh-text-gray-900 hover:wh-text-gray-700"
             >
+              {finalLogoUrl && (
+                <img
+                  src={finalLogoUrl}
+                  alt={finalTitle || 'Logo'}
+                  className="wh-h-16 wh-w-auto"
+                />
+              )}
               {finalTitle}
             </Link>
           </div>

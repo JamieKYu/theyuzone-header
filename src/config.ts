@@ -2,14 +2,12 @@ export interface HeaderConfig {
   alwaysVisible?: boolean;
   title?: string;
   titleHref?: string;
+  logoUrl?: string;
   navigationItems?: Array<{
     label: string;
     href: string;
     external?: boolean;
   }>;
-  googleAnalytics?: {
-    measurementId: string;
-  };
 }
 
 // Server-side function to load config from JSON file
@@ -61,9 +59,7 @@ export function getHeaderConfig(): HeaderConfig {
     alwaysVisible: process.env.NEXT_PUBLIC_HEADER_ALWAYS_VISIBLE === 'true',
     title: process.env.NEXT_PUBLIC_HEADER_TITLE,
     titleHref: process.env.NEXT_PUBLIC_HEADER_TITLE_HREF,
+    logoUrl: process.env.NEXT_PUBLIC_HEADER_LOGO_URL,
     navigationItems: parseNavigationItems(),
-    googleAnalytics: process.env.NEXT_PUBLIC_HEADER_GA_MEASUREMENT_ID ? {
-      measurementId: process.env.NEXT_PUBLIC_HEADER_GA_MEASUREMENT_ID
-    } : undefined,
   };
 }

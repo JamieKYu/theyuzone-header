@@ -2,6 +2,7 @@
   "alwaysVisible": true,
   "title": "my website",
   "titleHref": "/",
+  "logoUrl": "",
   "navigationItems": [
     {
       "label": "home",
